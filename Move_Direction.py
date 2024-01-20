@@ -43,33 +43,44 @@ def move_direction(nodes):
     current_node = None
     output = []
     orientation = 'F'
+    
     for node in nodes:
         next_node = node
         if current_node is None:
             current_node = next_node
         elif next_node[1] < current_node[1]:
-            orientation,data = handle_rotation(orientation,'R')
+            orientation, data = handle_rotation(orientation, 'R')
             output.extend(data)
-            output.extend('F')
+            output.append('F')  # Fix here
         elif next_node[1] > current_node[1]:
-            orientation,data = handle_rotation(orientation,'L')
+            orientation, data = handle_rotation(orientation, 'L')
             output.extend(data)
-            output.extend('F')
+            output.append('F')  # Fix here
         elif next_node[0] < current_node[0]:
-            orientation,data = handle_rotation(orientation,'B')
+            orientation, data = handle_rotation(orientation, 'B')
             output.extend(data)
-            output.extend('B')
+            output.append('B')  # Fix here
         elif next_node[0] > current_node[0]:
-            orientation,data = handle_rotation(orientation,'F')
+            orientation, data = handle_rotation(orientation, 'F')
             output.extend(data)
-            output.extend('F')
+            output.append('F')  # Fix here
 
         current_node = next_node
 
     return output
 
+def get_bot1_value(data):
+    if 1 in data and isinstance(data[1], list):
+        return data[1]
+    elif 1 in data and isinstance(data[1], int):
+        return [data[1]]
+    else:
+        return []
+
 def command_bot(data):
-    bot1 = next((d.get(1, []) for d in data if 1 in d), [])
+    bot1 = get_bot1_value(data)
+
+
     
     bot1_movement = move_direction(bot1)
     
@@ -79,3 +90,4 @@ def command_bot(data):
         response_list.append(f"1a{movement}b10")
 
     return response_list
+
