@@ -1,5 +1,7 @@
 import time
 from Move_Direction import command_bot
+from a_star_test import main
+
 import socket
 
 # Set the IP address and port on which the laptop server will listen
@@ -21,9 +23,7 @@ client_socket1, client_address1 = server_socket.accept()
 print(f"Connection from {client_address1}")
 print(f"Server listening on {host}:{port}")
 
-# Accept a connection
-client_socket2, client_address2 = server_socket.accept()
-print(f"Connection from {client_address2}")
+
 bot1_done = False
 bot1_home = True
 bot2_done = False
@@ -33,34 +33,48 @@ while True:
     data1 = client_socket1.recv(1024)
     if not data1:
         break
-    data2 = client_socket2.recv(1024)
-    if not data2:
-        break
+ 
     print(f"Received from client: {data1.decode()}")
     # print(f"Received from client: {data2.decode()}")
 
     # Send a response back to the client
     # str(dir) + ":" + str(time)
-    test_data = [{1: [(9, 14), (9, 13), (10, 13), (10, 12)]}, {2: [(11, 11), (11, 10), (11, 9), (11, 8), (12, 8), (13, 8), (14, 8), (15, 8), (15, 7)]}]
-    commands = command_bot(test_data)
-    for command in commands:
-        if command[0]=='1' and bot1_done == False:
+
+    # pick_path, return_path = main()
+
+    pick_path = {1: [(3, 1), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (3, 8)]}
+
+    if  bot1_home and not bot1_done:
+        commands = command_bot(pick_path)
+        for command in commands:
+         if command[0]=='1' and bot1_done == False:
             print(command)
             response = command
             client_socket1.sendall(response.encode())
             # time.sleep(1)
-        if command[0]=='2' and bot2_done == False:
+    bot1_done = True
+    bot1_home = False
+
+
+
+    if not bot1_home and bot1_done:
+        
+        path = pick_path # You need to define pick_path based on your logic
+        commands = command_bot(path)
+    
+        for command in commands:
+         if command[0] == '1':
             print(command)
             response = command
-            client_socket2.sendall(response.encode())
-        time.sleep(1)
-    bot1_done = True
-    bot2_done = True
+            client_socket1.sendall(response.encode())
+            # time.sleep(1)  # Optionally, introduce a delay if needed
+    bot1_home = True
+   
 
 
 
-    
+
+
 # Close the connection
 client_socket1.close()
-client_socket2.close()
 server_socket.close()

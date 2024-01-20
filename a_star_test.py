@@ -239,6 +239,7 @@ def take_home(bot_id, matrix):  # img_id is just for output of process and is no
 
 
 def main():
+
     vc = cv2.VideoCapture(0)
 
     while True:
@@ -316,6 +317,7 @@ def main():
         #     # something simmilar for 8
         # cv2.waitKey(0)
         # cv2.destroyAllWindows()
+    return pick_path, return_path
 
 
 if __name__ == "__main__":
