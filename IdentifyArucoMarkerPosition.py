@@ -10,7 +10,7 @@ def calculate_orientation(marker_corners):
     return marker_orientation_deg
 
 def identify_aruco_marker_position(frame):
-    grid_spacing = 50
+    grid_spacing = 20
     orientation = []
     positions = []
     list_matrix = []

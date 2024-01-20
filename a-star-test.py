@@ -1,11 +1,13 @@
 import heapq
-
 # from matrix import generate_matrix_from_image
 import cv2
 import numpy as np
 from IdentifyArucoMarkerPosition import identify_aruco_marker_position
 from constants import *
 
+bot = '4'
+waste = '5'
+home = '1'
 
 def get_neighbors(node, matrix):
     row, col = node
@@ -21,7 +23,6 @@ def get_neighbors(node, matrix):
         ):
             neighbors.append((new_row, new_col))
     return neighbors
-
 
 def astar(start, goal, matrix):
     heap = [(0, start)]
@@ -54,10 +55,8 @@ def astar(start, goal, matrix):
     else:
         return None
 
-
 def heuristic(node, target):
     return abs(node[0] - target[0]) + abs(node[1] - target[1])
-
 
 def draw_matrix(matrix, path=[]):
     matrix_size = len(matrix)  # Assuming matrix is a square matrix
@@ -111,7 +110,6 @@ def draw_matrix(matrix, path=[]):
                 color,
                 -1,
             )
-
     # Draws path
     if path:
         for node in path:
@@ -122,7 +120,6 @@ def draw_matrix(matrix, path=[]):
                 gray,
                 -1,
             )
-
     # Draws matrixlines
     for i in range(0, width, cell_size):
         cv2.line(canvas, (i, 0), (i, height), black, 1)
@@ -131,11 +128,7 @@ def draw_matrix(matrix, path=[]):
 
     return canvas
 
-def find_closest_indices(matrix, bot_id, waste_id):
-    # print("inisde find_closest_indices")
-    # print('value 1 = ', bot_id)
-    # print('waste_id = ', waste_id)
-    
+def find_closest_indices(matrix, bot_id, waste_id):    
     matrix_array = np.array(matrix)
     start_nodes = np.argwhere(matrix_array == bot_id)
     end_nodes = np.argwhere(matrix_array == waste_id)
@@ -159,31 +152,30 @@ def find_closest_indices(matrix, bot_id, waste_id):
 
  
 def position_Bot(
-    bot_id, matrix
+    bot_id, waste_id, matrix
 ):  # img_id is just for output of process and is not nedded
-    print("executing position bot")
     final_path = []
     matrix_array = np.array(matrix)
 
-    closest_indices = find_closest_indices(matrix_array, '4', '5')
+    closest_indices = find_closest_indices(matrix_array, str(bot_id), str(waste_id))
     if closest_indices is not None:
         closest_start, closest_end, min_distance = find_closest_indices(
-            matrix_array, '4', '5'
+            matrix_array, str(bot_id), str(waste_id)
         )
+        
         closest_end = (closest_end[0] + 1, closest_end[1])
         path = astar(closest_start, closest_end, matrix)
         matrix[closest_end[0] - 1][closest_end[1]] = "b"
         matrix[closest_start[0]][closest_start[1]] = "a"
-        matrix[closest_end[0]][closest_end[1]] = '4'
-
+        matrix[closest_end[0]][closest_end[1]] = str(bot_id)
         matrix_array = np.array(matrix)
-        # cv2.imshow('1Pathmatrix{}'.format(img_id),draw_matrix(matrix,path))
+        
+        # cv2.imshow('1Pathmatrix{}'.format(bot_id),draw_matrix(matrix,path))
         # cv2.imwrite('images/Dijkstar/bot1/{}Pathmatrix.png'.format(img_id),draw_matrix(matrix,path))
 
-        final_path.append({1: path})
-        print("closest indices found for bot {}. = ".format(bot_id), path)
-        cv2.imshow("2Pathmatrix{}".format(1), draw_matrix(matrix, path))
-
+        final_path.append({bot_id: path})
+        # print("closest indices found for bot {}. = ".format(bot_id), path)
+        cv2.imshow("{Pick Path {}".format(1), draw_matrix(matrix, path))
     else:
         print("No closest indices found for bot {}.".format(bot_id))
 
@@ -204,43 +196,37 @@ def position_Bot(
     return final_path, matrix
 
 
-def take_home(bot_id, matrix):  # img_id is just for output of process and is not nedded
+def take_home(bot_id, waste_id, matrix):  # img_id is just for output of process and is not nedded
     final_path = []
     matrix_array = np.array(matrix)
-    if bot_id == '4':
-        closest_start, closest_end, min_distance = (
-            find_closest_indices(matrix_array, '4', "4") != None
+
+    closest_indices = find_closest_indices(matrix_array, str(bot_id), str(waste_id))
+    if closest_indices is not None:
+        closest_start, closest_end, min_distance = find_closest_indices(
+            matrix_array, str(bot_id), (waste_id)
         )
-        closest_end = (closest_end[0] + 2, closest_end[1] + 1)
+        
+        closest_end = (closest_end[0] +1, closest_end[1] + 2)
         path = astar(closest_start, closest_end, matrix)
-        matrix[closest_start[0]][closest_start[1]] = "a"
-        matrix[closest_start[0] - 1][closest_start[1]] = "a"
-        matrix[closest_end[0]][closest_end[1]] = '4'
+        matrix[closest_start[0]][closest_start[1]] = 'a'
+        matrix[closest_start[0] - 1][closest_start[1]] = 'a'
+        matrix[closest_end[0]][closest_end[1]] = str(bot_id)
         matrix_array = np.array(matrix)
 
-        final_path.append({1: path})
-        # cv2.imshow('1Pushmatrix{}'.format(img_id),draw_matrix(matrix,path))
+        final_path.append({bot_id : path})
+        cv2.imshow('Home Path{}'.format(bot_id),draw_matrix(matrix,path))
         # cv2.imwrite('images/Dijkstar/bot1/{}Pushmatrix.png'.format(img_id),draw_matrix(matrix,path))
-
-    # if bot_id == '5':
-    #     closest_start, closest_end, min_distance = find_closest_indices(matrix_array, '5', '5')
-    #     closest_end = (closest_end[0] +1, closest_end[1] + 2)
-    #     path = astar(closest_start, closest_end, matrix)
-    #     matrix[closest_start[0]][closest_start[1]] = 'a'
-    #     matrix[closest_start[0] - 1][closest_start[1]] = 'a'
-    #     matrix[closest_end[0]][closest_end[1]] = '5'
-    #     matrix_array = np.array(matrix)
-
-    #     final_path.append({2:path})
-    # cv2.imshow('2Pushmatrix{}'.format(img_id),draw_matrix(matrix,path))
-    # cv2.imwrite('images/Dijkstar/bot2/{}Pushmatrix.png'.format(img_id),draw_matrix(matrix,path))
+    else:
+        print("No closest indices found for bot {}.".format(bot_id))
+        
     final_path = final_path[0] if final_path else {}
     return final_path, matrix
 
 
 def main():
+    # vc = cv2.VideoCapture('http://192.168.1.153:4747/video')
     vc = cv2.VideoCapture(0)
-
+    
     while True:
         # Read a frame from the video capture
         _, frame = vc.read()
@@ -276,47 +262,20 @@ def main():
 
             pick_path = []
             return_path = []
-            if find_closest_indices(matrix_array, '4', '5'):
-                obj_path, matrix = position_Bot('4', matrix)
+            # if find_closest_indices(matrix_array, '4', '5'):
+            obj_path, matrix = position_Bot(bot, waste, matrix)
 
-                print("path = ", obj_path)
-                # ret_path,matrix = take_home('1',matrix)
-
-                pick_path.append(obj_path)
-                # return_path.append(ret_path)
+            print("path to waste = ", obj_path)
+            
+            ret_path,matrix = take_home(bot,home,matrix)
+            print("path to home = ", ret_path)
+            # pick_path.append(obj_path)
+            # return_path.append(ret_path)
 
         cv2.imshow("Frame", frame)
         key = cv2.waitKey(1) & 0xFF
         if key == ord("q"):
             break
-
-        # img_id=1
-        # while find_closest_indices(matrix_array, '6', '5') != None or find_closest_indices(matrix_array, '5', '8') != None:
-        #     pick_path = []
-        #     return_path = []
-        #     if find_closest_indices(matrix_array, '6', '5') != None:
-        #         obj_path,matrix = position_Bot('6',matrix,img_id)
-        #         ret_path,matrix = take_home('6',matrix,img_id)
-        #         pick_path.append(obj_path)
-        #         return_path.append(ret_path)
-
-        #     if find_closest_indices(matrix_array, '5', '8') != None:
-        #         obj_path,matrix = position_Bot('5',matrix,img_id)
-        #         ret_path,matrix = take_home('5',matrix,img_id)
-        #         pick_path.append(obj_path)
-        #         return_path.append(ret_path)
-
-        #     matrix_array = np.array(matrix)
-
-        #     print("{} Pick:".format(img_id),pick_path)
-        #     print("{} HomePath:".format(img_id),return_path)
-
-        #     img_id += 1
-
-        #     # something simmilar for 8
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
-
 
 if __name__ == "__main__":
     main()
