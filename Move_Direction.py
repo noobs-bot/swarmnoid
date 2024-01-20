@@ -70,24 +70,12 @@ def move_direction(nodes):
 
 def command_bot(data):
     bot1 = next((d.get(1, []) for d in data if 1 in d), [])
-
-    bot2 = next((d.get(2, []) for d in data if 2 in d), [])
-
-    bot1_movement = move_direction(bot1)
-    bot2_movement = move_direction(bot2)
-
-    max_length = max(len(bot1_movement), len(bot2_movement))
-    response_list = []
     
-    for i in range(max_length):
-        if i < len(bot1_movement) and i < len(bot2_movement):
-            response_list.append(f"1a{bot1_movement[i]}b10")
-            response_list.append(f"2a{bot2_movement[i]}b10")
-        elif i < len(bot1_movement):
-            response_list.append(f"1a{bot1_movement[i]}b10")
-        elif i < len(bot2_movement):
-            response_list.append(f"2a{bot2_movement[i]}b10")   
+    bot1_movement = move_direction(bot1)
+    
+    response_list = []
 
-    return response_list  
+    for movement in bot1_movement:
+        response_list.append(f"1a{movement}b10")
 
-
+    return response_list
