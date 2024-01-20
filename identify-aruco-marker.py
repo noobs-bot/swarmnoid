@@ -10,7 +10,7 @@ def calculate_orientation(marker_corners):
     marker_orientation_deg = np.degrees(marker_orientation) % 360  # Ensure angle is between 0 and 360 degrees
     return marker_orientation_deg
 
-def generate_matrix_from_image(frame):
+def identify_aruco_marker(frame):
     grid_spacing = 50
     orientation =[]
     list_matrix = []
@@ -50,7 +50,7 @@ if __name__=="__main__":
     vc = cv2.VideoCapture(0)
     while True:
         _,frame = vc.read()
-        matrix, orientation = generate_matrix_from_image(frame)
+        matrix, orientation = identify_aruco_marker(frame)
         # print(f'orientation = ', orientation)
         print(f'matrix = ', matrix)
         if orientation != []:
