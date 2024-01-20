@@ -194,7 +194,11 @@ def main():
 
     image_path = 'images\BoardGrid.png'
     grid =generate_matrix_from_image(cv2.imread(image_path))[0]
+    print('gird = ', grid)
     matrix_array = np.array(grid)
+
+    print('matrix array = ', matrix_array)
+
     img_id=1
     while find_closest_indices(matrix_array, '6', '9') != None or find_closest_indices(matrix_array, '7', '8') != None:
         pick_path = []
