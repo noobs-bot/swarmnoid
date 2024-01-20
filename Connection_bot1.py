@@ -6,7 +6,7 @@ import socket
 
 # Set the IP address and port on which the laptop server will listen
 host = '0.0.0.0'  # Listen on all available interfaces
-port = 12345
+port = 1111
 
 # Create a socket object
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
