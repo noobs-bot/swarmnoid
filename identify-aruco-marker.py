@@ -39,7 +39,6 @@ def generate_matrix_from_image(frame):
                 cell_x = centroid[0] // grid_spacing
                 cell_y = centroid[1] // grid_spacing
 
-
                 if cell_x < matrix_size[1] and cell_y < matrix_size[0]:
                     grid_matrix[cell_y, cell_x] = marker_id
                     orientation.append((marker_id,calculate_orientation(corners_array)))
@@ -47,17 +46,24 @@ def generate_matrix_from_image(frame):
         list_matrix = grid_matrix.tolist()
     return list_matrix,orientation
 
-vc = cv2.VideoCapture(0)
-while True:
-    _,frame = vc.read()
-    matrix, orientation = generate_matrix_from_image(frame)
-    print(f'orientation = ', orientation)
-    if orientation != []:
-        print(orientation)
-        cv2.putText(frame, f"ID: {orientation[0]}", (50,50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
-    cv2.imshow('Frame',frame)
-    key = cv2.waitKey(1) & 0xFF
-	# if the `q` key was pressed, break from the loop
-    if key == ord("q"):
-        break
-cv2.destroyAllWindows()
+if __name__=="__main__":
+    vc = cv2.VideoCapture(0)
+    while True:
+        _,frame = vc.read()
+        matrix, orientation = generate_matrix_from_image(frame)
+        # print(f'orientation = ', orientation)
+        print(f'matrix = ', matrix)
+        if orientation != []:
+            diff = 0
+            for item in orientation:
+                print(item)
+                cv2.putText(frame, f"ID: {item}", (50,50 + diff), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
+                diff = diff + 20
+        cv2.imshow('Frame',frame)
+        key = cv2.waitKey(1) & 0xFF
+        # if the `q` key was pressed, break from the loop
+        if key == ord("q"):
+            break
+    cv2.destroyAllWindows()
+
+

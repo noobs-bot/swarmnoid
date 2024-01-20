@@ -64,28 +64,28 @@ def Image_Grid(frame):
     
     return frame
 
-frame = cv2.imread('images\TestGround.png')
-frame = Image_Grid(frame)
-cv2.imshow("board", frame)
-cv2.imwrite('images\BoardGrid.png',frame)
+# frame = cv2.imread('images\TestGround.png')
+# frame = Image_Grid(frame)
+# cv2.imshow("board", frame)
+# cv2.imwrite('images\BoardGrid.png',frame)
 
-cv2.waitKey(0)
+# cv2.waitKey(0)
 
 # if your BoardGrid image is not of board run above and comment all of below
 
-# vid = cv2.VideoCapture(0)
-# while True:
-#     _,frame = vid.read()
-#     frame = imutils.resize(frame, width=1000)
-#     # frame = Identify_Aurco(frame)
-#     # frame = Image_Grid(frame)
-#     cv2.imwrite('images\BoardGrid.png',frame)
-#     cv2.imshow('Grid From Board',frame)
-#     cv2.imwrite('images\Grid.png',frame)
-#     if cv2.waitKey(1) & 0xFF == ord('q'): 
-#         break
-# # print(generate_matrix_from_image(frame))
+vid = cv2.VideoCapture(0)
+while True:
+    _,frame = vid.read()
+    frame = imutils.resize(frame, width=1000)
+    frame = Identify_Aurco(frame)
+    frame = Image_Grid(frame)
+    # cv2.imwrite('images\BoardGrid.png',frame)
+    cv2.imshow('Grid From Board',frame)
+    # cv2.imwrite('images\Grid.png',frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'): 
+        break
+print(generate_matrix_from_image(frame))
     
-# vid.release()
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
+vid.release()
+cv2.waitKey(0)
+cv2.destroyAllWindows()
