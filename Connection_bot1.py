@@ -1,80 +1,59 @@
 import time
-from Move_Direction import command_bot
-from a_star_test import main
-
 import socket
+from Move_Direction import command_bot
 
-# Set the IP address and port on which the laptop server will listen
-host = '0.0.0.0'  # Listen on all available interfaces
-port = 1111
+def handle_bot(client_socket, bot_id, pick_path, return_path):
+    bot_done = False
+    bot_home = True
 
-# Create a socket object
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    while True:
+        data = client_socket.recv(1024)
+        if not data:
+            break
 
-# Bind the socket to a specific address and port
-server_socket.bind((host, port))
+        print(f"Received from bot {bot_id}: {data.decode()}")
 
-# Listen for incoming connections
-server_socket.listen(2)
-print(f"Server listening on {host}:{port}")
+        if bot_home and not bot_done:
+            commands = command_bot(pick_path)
+            for command in commands:
+                if command.startswith(f"{bot_id}a") and not bot_done:
+                    print(command)
+                    response = command
+                    client_socket.sendall(response.encode())
+                    time.sleep(1)  # Introduce a delay if needed
+            bot_done = True
+            bot_home = False
 
-# Accept a connection
-client_socket1, client_address1 = server_socket.accept()
-print(f"Connection from {client_address1}")
-print(f"Server listening on {host}:{port}")
+        if not bot_home and bot_done:
+            commands = command_bot(return_path)
+            for command in commands:
+                if command.startswith(f"{bot_id}a") and not bot_home:
+                    print(command)
+                    response = command
+                    client_socket.sendall(response.encode())
+                    time.sleep(1)  # Introduce a delay if needed
+            bot_done = True
+            bot_home = True
 
+    # Close the connection when the loop breaks
+    client_socket.close()
 
-bot1_done = False
-bot1_home = True
-bot2_done = False
-bot2_home = True
-while True:
-    # Receive a response from the client
-    data1 = client_socket1.recv(1024)
-    if not data1:
-        break
- 
-    print(f"Received from client: {data1.decode()}")
-    # print(f"Received from client: {data2.decode()}")
+def main():
+    host = "0.0.0.0"
+    port = 1111
 
-    # Send a response back to the client
-    # str(dir) + ":" + str(time)
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind((host, port))
+    server_socket.listen(1)
+    print(f"Server listening on {host}:{port}")
 
-    # pick_path, return_path = main()
+    bot1_pick_path = {1: [(3, 1), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (3, 8)]}
+    bot1_return_path = {1: [(3, 8), (3, 7), (3, 6), (3, 5), (3, 4), (3, 3), (3, 2), (3, 1)]}
 
-    pick_path = {1: [(3, 1), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (3, 8)]}
+    while True:
+        client_socket1, client_address1 = server_socket.accept()
+        print(f"Connection from {client_address1}")
+        handle_bot(client_socket1, 1, bot1_pick_path, bot1_return_path)
 
-    if  bot1_home and not bot1_done:
-        commands = command_bot(pick_path)
-        for command in commands:
-         if command[0]=='1' and bot1_done == False:
-            print(command)
-            response = command
-            client_socket1.sendall(response.encode())
-            # time.sleep(1)
-    bot1_done = True
-    bot1_home = False
-
-
-
-    if not bot1_home and bot1_done:
-        
-        path = pick_path # You need to define pick_path based on your logic
-        commands = command_bot(path)
-    
-        for command in commands:
-         if command[0] == '1':
-            print(command)
-            response = command
-            client_socket1.sendall(response.encode())
-            # time.sleep(1)  # Optionally, introduce a delay if needed
-    bot1_home = True
-   
-
-
-
-
-
-# Close the connection
-client_socket1.close()
-server_socket.close()
+if __name__ == "__main__":
+    main()

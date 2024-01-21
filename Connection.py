@@ -1,66 +1,68 @@
 import time
-from Move_Direction import command_bot
 import socket
+import threading
+from Move_Direction import command_bot
 
-# Set the IP address and port on which the laptop server will listen
-host = '0.0.0.0'  # Listen on all available interfaces
-port = 1111
+def handle_bot(client_socket, bot_id, pick_path, return_path):
+    bot_done = False
+    bot_home = True
 
-# Create a socket object
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    while True:
+        data = client_socket.recv(1024)
+        if not data:
+            break
 
-# Bind the socket to a specific address and port
-server_socket.bind((host, port))
+        print(f"Received from bot {bot_id}: {data.decode()}")
 
-# Listen for incoming connections
-server_socket.listen(2)
-print(f"Server listening on {host}:{port}")
+        if bot_home and not bot_done:
+            commands = command_bot(pick_path)
+            for command in commands:
+                if command.startswith(f"{bot_id}a") and not bot_done:
+                    print(command)
+                    response = command
+                    client_socket.sendall(response.encode())
+                    time.sleep(1)  # Introduce a delay if needed
+            bot_done = True
+            bot_home = False
 
-# Accept a connection
-client_socket1, client_address1 = server_socket.accept()
-print(f"Connection from {client_address1}")
-print(f"Server listening on {host}:{port}")
+        if not bot_home and bot_done:
+            commands = command_bot(return_path)
+            for command in commands:
+                if command.startswith(f"{bot_id}a") and not bot_home:
+                    print(command)
+                    response = command
+                    client_socket.sendall(response.encode())
+                    time.sleep(1)  # Introduce a delay if needed
+            bot_done = True
+            bot_home = True
 
-# Accept a connection
-client_socket2, client_address2 = server_socket.accept()
-print(f"Connection from {client_address2}")
-bot1_done = False
-bot1_home = True
-bot2_done = False
-bot2_home = True
-while True:
-    # Receive a response from the client
-    data1 = client_socket1.recv(1024)
-    if not data1:
-        break
-    data2 = client_socket2.recv(1024)
-    if not data2:
-        break
-    print(f"Received from client: {data1.decode()}")
-    # print(f"Received from client: {data2.decode()}")
+    # Close the connection when the loop breaks
+    client_socket.close()
 
-    # Send a response back to the client
-    # str(dir) + ":" + str(time)
-    test_data = [{1: [(9, 14), (9, 13), (10, 13), (10, 12)]}, {2: [(11, 11), (11, 10), (11, 9), (11, 8), (12, 8), (13, 8), (14, 8), (15, 8), (15, 7)]}]
-    commands = command_bot(test_data)
-    for command in commands:
-        if command[0]=='1' and bot1_done == False:
-            print(command)
-            response = command
-            client_socket1.sendall(response.encode())
-            # time.sleep(1)
-        if command[0]=='2' and bot2_done == False:
-            print(command)
-            response = command
-            client_socket2.sendall(response.encode())
-        time.sleep(1)
-    bot1_done = True
-    bot2_done = True
+def main():
+    host = "0.0.0.0"
+    port = 1111
 
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind((host, port))
+    server_socket.listen(2)
+    print(f"Server listening on {host}:{port}")
 
+    bot1_pick_path = {1: [(3, 1), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (3, 8)]}
+    bot1_return_path = {1: [(3, 8), (3, 7), (3, 6), (3, 5), (3, 4), (3, 3), (3, 2), (3, 1)]}
 
-    
-# Close the connection
-client_socket1.close()
-client_socket2.close()
-server_socket.close()
+    bot2_pick_path = {}  # Define pick_path for bot 2
+    bot2_return_path = {}  # Define return_path for bot 2
+
+    while True:
+        client_socket1, client_address1 = server_socket.accept()
+        print(f"Connection from {client_address1}")
+        threading.Thread(target=handle_bot, args=(client_socket1, 1, bot1_pick_path, bot1_return_path)).start()
+
+        # Uncomment the following lines to handle bot 2 concurrently
+        # client_socket2, client_address2 = server_socket.accept()
+        # print(f"Connection from {client_address2}")
+        # threading.Thread(target=handle_bot, args=(client_socket2, 2, bot2_pick_path, bot2_return_path)).start()
+
+if __name__ == "__main__":
+    main()
