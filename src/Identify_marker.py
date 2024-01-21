@@ -11,7 +11,8 @@ def calculate_orientation(marker_corners):
     return marker_orientation_deg
 
 def identify_aruco_marker(frame):
-    grid_spacing = 50
+    grid_spacing = 20
+    positions = []
     orientation =[]
     list_matrix = []
 
@@ -42,9 +43,10 @@ def identify_aruco_marker(frame):
                 if cell_x < matrix_size[1] and cell_y < matrix_size[0]:
                     grid_matrix[cell_y, cell_x] = marker_id
                     orientation.append((marker_id,calculate_orientation(corners_array)))
+                    positions.append((marker_id, centroid, calculate_orientation(corners_array)))
 
         list_matrix = grid_matrix.tolist()
-    return list_matrix,orientation
+    return list_matrix,orientation, positions
 
 if __name__=="__main__":
     vc = cv2.VideoCapture(0)
