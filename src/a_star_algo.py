@@ -10,6 +10,16 @@ waste = '5'
 home = '1'
 
 def get_neighbors(node, matrix):
+    """
+    Get neighboring nodes of a given node in the matrix.
+    
+    Parameters:
+    - node: Tuple representing the coordinates of the current node.
+    - matrix: 2D matrix representing the environment.
+
+    Returns:
+    - List of neighboring nodes.
+    """
     row, col = node
     directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
     neighbors = []
@@ -25,6 +35,17 @@ def get_neighbors(node, matrix):
     return neighbors
 
 def astar(start, goal, matrix):
+    """
+    A* algorithm to find the shortest path between start and goal nodes in the matrix.
+    
+    Parameters:
+    - start: Tuple representing the starting coordinates.
+    - goal: Tuple representing the goal coordinates.
+    - matrix: 2D matrix representing the environment.
+
+    Returns:
+    - List of coordinates representing the shortest path.
+    """
     heap = [(0, start)]
     came_from = {}
     cost_so_far = {start: 0}
@@ -56,9 +77,29 @@ def astar(start, goal, matrix):
         return None
 
 def heuristic(node, target):
+    """
+    Heuristic function for the A* algorithm.
+    
+    Parameters:
+    - node: Tuple representing the current node.
+    - target: Tuple representing the target node.
+
+    Returns:
+    - Heuristic value.
+    """
     return abs(node[0] - target[0]) + abs(node[1] - target[1])
 
 def draw_matrix(matrix, path=[]):
+    """
+    Draw the matrix with optional path overlay.
+    
+    Parameters:
+    - matrix: 2D matrix representing the environment.
+    - path: List of coordinates representing the path to be overlayed.
+
+    Returns:
+    - Image of the matrix with optional path overlay.
+    """
     matrix_size = len(matrix)  # Assuming matrix is a square matrix
 
     dark_blue = (50, 25, 125)
@@ -129,6 +170,17 @@ def draw_matrix(matrix, path=[]):
     return canvas
 
 def find_closest_indices(matrix, bot_id, waste_id):    
+    """
+    Find the closest start and end indices for a given bot and waste in the matrix.
+    
+    Parameters:
+    - matrix: 2D matrix representing the environment.
+    - bot_id: Identifier for the bot.
+    - waste_id: Identifier for the waste.
+
+    Returns:
+    - Tuple containing closest start and end indices, and the minimum distance.
+    """
     matrix_array = np.array(matrix)
     start_nodes = np.argwhere(matrix_array == bot_id)
     end_nodes = np.argwhere(matrix_array == waste_id)
@@ -154,6 +206,17 @@ def find_closest_indices(matrix, bot_id, waste_id):
 def position_Bot(
     bot_id, waste_id, matrix
 ):  # img_id is just for output of process and is not nedded
+    """
+    Move the bot to pick up waste and update the matrix.
+    
+    Parameters:
+    - bot_id: Identifier for the bot.
+    - waste_id: Identifier for the waste.
+    - matrix: 2D matrix representing the environment.
+
+    Returns:
+    - Final path and updated matrix.
+    """
     final_path = []
     matrix_array = np.array(matrix)
 
@@ -182,6 +245,17 @@ def position_Bot(
 
 
 def take_home(bot_id, waste_id, matrix):  # img_id is just for output of process and is not nedded
+    """
+    Move the bot to take waste home and update the matrix.
+    
+    Parameters:
+    - bot_id: Identifier for the bot.
+    - waste_id: Identifier for the waste.
+    - matrix: 2D matrix representing the environment.
+
+    Returns:
+    - Final path and updated matrix.
+    """
     final_path = []
     matrix_array = np.array(matrix)
 
