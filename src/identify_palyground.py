@@ -46,19 +46,33 @@ def wrap_correction(frame, ids, corners):
 
     # cv2.imshow('original frame', frame)
     playground = None
+
+        # Filter out markers that you want to use for perspective transformation
+    valid_marker_ids = [0, 1, 2, 3]  # Update with the IDs of the markers you want to use
+    valid_corners = [corner for marker_id, corner in zip(ids, corners) if marker_id[0] in valid_marker_ids]
     
-    if len(ids) >= 4:
-        # corners detected in order (true_id -> corner_id )0 -> 3, 1 -> 2, 2 -> 1, 3 -> 0,
-        for id in ids:
-            id_marker = int(id[0])
-            if id_marker == 0:
-                bottom_right = tuple(map(int, corners[3][0][2]))
-            elif id_marker == 1:
-                bottom_left = tuple(map(int, corners[2][0][3]))
-            elif id_marker == 2:
-                top_right = tuple(map(int, corners[1][0][1]))
-            elif id_marker == 3:
-                top_left = tuple(map(int, corners[0][0][0]))
+    # if len(ids) >= 4:
+    #     # corners detected in order (true_id -> corner_id )0 -> 3, 1 -> 2, 2 -> 1, 3 -> 0,
+    #     for id in ids:
+    #         id_marker = int(id[0])
+    #         if id_marker == 0:
+    #             bottom_right = tuple(map(int, corners[3][0][2]))
+    #         elif id_marker == 1:
+    #             bottom_left = tuple(map(int, corners[2][0][3]))
+    #         elif id_marker == 2:
+    #             top_right = tuple(map(int, corners[1][0][1]))
+    #         elif id_marker == 3:
+    #             top_left = tuple(map(int, corners[0][0][0]))
+
+    if len(valid_corners) >= 4:
+        # Sort corners based on marker IDs
+        sorted_corners = [corner for _, corner in sorted(zip(ids, valid_corners), key=lambda x: x[0][0])]
+
+        # Extract corners in order
+        bottom_right = tuple(map(int, sorted_corners[3][0][2]))
+        bottom_left = tuple(map(int, sorted_corners[2][0][3]))
+        top_right = tuple(map(int, sorted_corners[1][0][1]))
+        top_left = tuple(map(int, sorted_corners[0][0][0]))
 
         # Check if all markers are detected before proceeding
         if None not in [bottom_right, bottom_left, top_right, top_left]:
