@@ -93,7 +93,6 @@ def wrap_correction():
 		print("Total available numbers----", numbers)
 		print("Threshold Size -- and type ----", thresh.shape, type(thresh))
 
-		import numpy as np
 
 		# Assuming 'matrix' is your 1100x1500 matrix
 		# For illustration purposes, let's create a sample matrix
@@ -165,11 +164,6 @@ while True:
 		cv2.putText(frame, "roll:{}".format(theta_y_360), (50,250), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
 		frame = wrap_correction()
-
-			
-			
-
-			
 
 	cv2.imshow("frame",frame)	
 
