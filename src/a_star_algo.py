@@ -2,14 +2,24 @@ import heapq
 # from matrix import generate_matrix_from_image
 import cv2
 import numpy as np
-from IdentifyArucoMarkerPosition import identify_aruco_marker_position
-from constants import *
+from Identify_marker import identify_aruco_marker
 
 bot = '4'
 waste = '5'
 home = '1'
 
+
 def get_neighbors(node, matrix):
+    """
+    Get neighboring nodes of a given node in the matrix.
+
+    Parameters:
+    - node: Tuple representing the coordinates of the current node.
+    - matrix: 2D matrix representing the environment.
+
+    Returns:
+    - List of neighboring nodes.
+    """
     row, col = node
     directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
     neighbors = []
@@ -24,7 +34,19 @@ def get_neighbors(node, matrix):
             neighbors.append((new_row, new_col))
     return neighbors
 
+
 def astar(start, goal, matrix):
+    """
+    A* algorithm to find the shortest path between start and goal nodes in the matrix.
+
+    Parameters:
+    - start: Tuple representing the starting coordinates.
+    - goal: Tuple representing the goal coordinates.
+    - matrix: 2D matrix representing the environment.
+
+    Returns:
+    - List of coordinates representing the shortest path.
+    """
     heap = [(0, start)]
     came_from = {}
     cost_so_far = {start: 0}
@@ -36,7 +58,8 @@ def astar(start, goal, matrix):
             break
 
         for next_node in get_neighbors(current_node, matrix):
-            new_cost = cost_so_far[current_node] + 1  # Assuming each step costs 1
+            new_cost = cost_so_far[current_node] + \
+                1  # Assuming each step costs 1
             if next_node not in cost_so_far or new_cost < cost_so_far[next_node]:
                 cost_so_far[next_node] = new_cost
                 priority = new_cost + heuristic(goal, next_node)
@@ -55,10 +78,32 @@ def astar(start, goal, matrix):
     else:
         return None
 
+
 def heuristic(node, target):
+    """
+    Heuristic function for the A* algorithm.
+
+    Parameters:
+    - node: Tuple representing the current node.
+    - target: Tuple representing the target node.
+
+    Returns:
+    - Heuristic value.
+    """
     return abs(node[0] - target[0]) + abs(node[1] - target[1])
 
+
 def draw_matrix(matrix, path=[]):
+    """
+    Draw the matrix with optional path overlay.
+
+    Parameters:
+    - matrix: 2D matrix representing the environment.
+    - path: List of coordinates representing the path to be overlayed.
+
+    Returns:
+    - Image of the matrix with optional path overlay.
+    """
     matrix_size = len(matrix)  # Assuming matrix is a square matrix
 
     dark_blue = (50, 25, 125)
@@ -128,7 +173,19 @@ def draw_matrix(matrix, path=[]):
 
     return canvas
 
-def find_closest_indices(matrix, bot_id, waste_id):    
+
+def find_closest_indices(matrix, bot_id, waste_id):
+    """
+    Find the closest start and end indices for a given bot and waste in the matrix.
+
+    Parameters:
+    - matrix: 2D matrix representing the environment.
+    - bot_id: Identifier for the bot.
+    - waste_id: Identifier for the waste.
+
+    Returns:
+    - Tuple containing closest start and end indices, and the minimum distance.
+    """
     matrix_array = np.array(matrix)
     start_nodes = np.argwhere(matrix_array == bot_id)
     end_nodes = np.argwhere(matrix_array == waste_id)
@@ -140,7 +197,8 @@ def find_closest_indices(matrix, bot_id, waste_id):
 
         for s_node in start_nodes:
             for e_node in end_nodes:
-                distance = abs(s_node[0] - e_node[0]) + abs(s_node[1] - e_node[1])
+                distance = abs(s_node[0] - e_node[0]) + \
+                    abs(s_node[1] - e_node[1])
                 if distance < min_distance:
                     min_distance = distance
                     closest_start = tuple(s_node)
@@ -150,19 +208,31 @@ def find_closest_indices(matrix, bot_id, waste_id):
 
     return None
 
- 
+
 def position_Bot(
     bot_id, waste_id, matrix
 ):  # img_id is just for output of process and is not nedded
+    """
+    Move the bot to pick up waste and update the matrix.
+
+    Parameters:
+    - bot_id: Identifier for the bot.
+    - waste_id: Identifier for the waste.
+    - matrix: 2D matrix representing the environment.
+
+    Returns:
+    - Final path and updated matrix.
+    """
     final_path = []
     matrix_array = np.array(matrix)
 
-    closest_indices = find_closest_indices(matrix_array, str(bot_id), str(waste_id))
+    closest_indices = find_closest_indices(
+        matrix_array, str(bot_id), str(waste_id))
     if closest_indices is not None:
         closest_start, closest_end, min_distance = find_closest_indices(
             matrix_array, str(bot_id), str(waste_id)
         )
-        
+
         closest_end = (closest_end[0] + 1, closest_end[1])
         path = astar(closest_start, closest_end, matrix)
         matrix[closest_end[0] - 1][closest_end[1]] = "b"
@@ -172,39 +242,57 @@ def position_Bot(
 
         final_path.append({bot_id: path})
         # print("closest indices found for bot {}. = ".format(bot_id), path)
-        cv2.imwrite('images/Dijkstar/bot1/{}Pathmatrix.png'.format(bot_id),draw_matrix(matrix,path))
-    
-        cv2.imshow("{Pick Path {}".format(1), draw_matrix(matrix, path))
+        cv2.imwrite('images/Dijkstar/bot1/{}Pathmatrix.png'.format(bot_id),
+                    draw_matrix(matrix, path))
+        cv2.imshow('From Bot - {} to Waste - {}'.format(bot_id,
+                   waste_id), draw_matrix(matrix, path))
+
     else:
         print("No closest indices found for bot {}.".format(bot_id))
     final_path = final_path[0] if final_path else {}
     return final_path, matrix
 
 
-def take_home(bot_id, waste_id, matrix):  # img_id is just for output of process and is not nedded
+# img_id is just for output of process and is not nedded
+
+# img_id is just for output of process and is not nedded
+def take_home(bot_id, waste_id, matrix):
+    """
+    Move the bot to take waste home and update the matrix.
+
+    Parameters:
+    - bot_id: Identifier for the bot.
+    - waste_id: Identifier for the waste.
+    - matrix: 2D matrix representing the environment.
+
+    Returns:
+    - Final path and updated matrix.
+    """
     final_path = []
     matrix_array = np.array(matrix)
 
-    closest_indices = find_closest_indices(matrix_array, str(bot_id), str(waste_id))
+    closest_indices = find_closest_indices(
+        matrix_array, str(bot_id), str(waste_id))
     if closest_indices is not None:
         closest_start, closest_end, min_distance = find_closest_indices(
             matrix_array, str(bot_id), (waste_id)
         )
-        
-        closest_end = (closest_end[0] +1, closest_end[1] + 2)
+
+        closest_end = (closest_end[0] + 1, closest_end[1] + 2)
         path = astar(closest_start, closest_end, matrix)
         matrix[closest_start[0]][closest_start[1]] = 'a'
         matrix[closest_start[0] - 1][closest_start[1]] = 'a'
         matrix[closest_end[0]][closest_end[1]] = str(bot_id)
         matrix_array = np.array(matrix)
 
-        final_path.append({bot_id : path})
-        
-        cv2.imwrite('images/Dijkstar/bot1/{}Pushmatrix.png'.format(bot_id),draw_matrix(matrix,path))
-        cv2.imshow('Home Path{}'.format(bot_id),draw_matrix(matrix,path))
+        final_path.append({bot_id: path})
+
+        cv2.imwrite('images/Dijkstar/bot1/{}Pushmatrix.png'.format(bot_id),
+                    draw_matrix(matrix, path))
+        cv2.imshow('Home Path - {}'.format(bot_id), draw_matrix(matrix, path))
     else:
         print("No closest indices found for bot {}.".format(bot_id))
-        
+
     final_path = final_path[0] if final_path else {}
     return final_path, matrix
 
@@ -212,16 +300,13 @@ def take_home(bot_id, waste_id, matrix):  # img_id is just for output of process
 def main():
     # vc = cv2.VideoCapture('http://192.168.1.153:4747/video')
     vc = cv2.VideoCapture(0)
-    
-    while True:
-        # Read a frame from the video capture
-        _, frame = vc.read()
 
+    while True:
+        _, frame = vc.read()
         # Identify Aruco marker positions in the frame
-        matrix, orientation, positions = identify_aruco_marker_position(frame)
+        matrix, orientation, positions = identify_aruco_marker(frame)
 
         matrix_array = np.array(matrix)
-
         if positions != []:
             diff = 15
             for item in positions:
@@ -250,8 +335,8 @@ def main():
             return_path = []
             # if find_closest_indices(matrix_array, '4', '5'):
             obj_path, matrix = position_Bot(bot, waste, matrix)
-            ret_path,matrix = take_home(bot,home,matrix)
-            
+            ret_path, matrix = take_home(bot, home, matrix)
+
             pick_path.append(obj_path)
             return_path.append(ret_path)
 
@@ -259,6 +344,7 @@ def main():
         key = cv2.waitKey(1) & 0xFF
         if key == ord("q"):
             break
+
 
 if __name__ == "__main__":
     main()
