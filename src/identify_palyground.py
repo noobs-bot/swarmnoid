@@ -38,6 +38,7 @@ with open('camera.json', 'r') as json_file:
 dist = np.array(camera_data["dist"])
 mtx = np.array(camera_data["mtx"])
 
+
 def wrap_correction(frame, ids, corners):
     bottom_right = None
     bottom_left = None
@@ -47,9 +48,6 @@ def wrap_correction(frame, ids, corners):
     # cv2.imshow('original frame', frame)
     playground = None
 
-    # Filter out markers that you want to use for perspective transformation
-    valid_marker_ids = [0, 1, 2, 3]  # Update with the IDs of the markers you want to use
-    valid_corners = [corner[0][1] for marker_id, corner in zip(ids, corners) if marker_id[0] in valid_marker_ids]
     # Filter out markers that you want to use for perspective transformation
     # Update with the IDs of the markers you want to use
     valid_marker_ids = [0, 1, 2, 3]
@@ -62,10 +60,11 @@ def wrap_correction(frame, ids, corners):
             zip(ids, valid_corners), key=lambda x: x[0][0])]
 
         # Extract corners in order
-        top_left = tuple(map(int, sorted_corners[0]))
-        top_right = tuple(map(int, sorted_corners[1]))
-        bottom_left = tuple(map(int, sorted_corners[2]))
-        bottom_right = tuple(map(int, sorted_corners[3]))
+    # Extract the first corner of each marker
+        top_left = tuple(map(int, sorted_corners[0][0][0]))
+        top_right = tuple(map(int, sorted_corners[1][0][0]))
+        bottom_right = tuple(map(int, sorted_corners[2][0][0]))
+        bottom_left = tuple(map(int, sorted_corners[3][0][0]))
 
         # Check if all markers are detected before proceeding
         if None not in [bottom_right, bottom_left, top_right, top_left]:
@@ -132,11 +131,20 @@ def main(frame):
 
 if __name__ == "__main__":
     print("[INFO] starting video stream...")
-    # vs = VideoStream("http://192.168.1.153:4747/video").start()
-    # vs = VideoStream(src=0).start()
+    # vs = cv2.VideoCapture("http://192.168.1.153:4747/video")
+    vs = cv2.VideoCapture(1)
 
-    vs = cv2.VideoCapture(ip_address)
-    _, frame = vs.read()
+    # # Get the current resolution
+    # current_width = int(vs.get(cv2.CAP_PROP_FRAME_WIDTH))
+    # current_height = int(vs.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    # # Calculate the new resolution (double the width and height)
+    # new_width = current_width * 2
+    # new_height = current_height * 2
+
+    # # Set the new resolution
+    # vs.set(cv2.CAP_PROP_FRAME_WIDTH, new_width)
+    # vs.set(cv2.CAP_PROP_FRAME_HEIGHT, new_height)
 
     while True:
         _, frame = vs.read()
