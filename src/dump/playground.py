@@ -100,60 +100,48 @@ def wrap_correction(frame, ids, corners):
             playground = cv2.warpPerspective(frame, matrix, (width, height))
 
             # Save the warped frame
-            cv2.imwrite("images/playground.png", playground)
+            # cv2.imwrite("images/playground.png", playground)
 
             # Display the warped frame
             # cv2.imshow("playground", playground)
 
-            # Resize the playground image by twice
-            # playground = cv2.resize(playground, (2 * playground.shape[1], 2 * playground.shape[0]))
-
     return frame, playground
 
 
-def main(frame):
-    playground = None
-    roi_frame = None
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    # time.sleep(2.0)
-    # cv2.imshow("original", frame)
-    corners, ids, _ = aruco.detectMarkers(frame, aruco_dict)
-    # print("Corner = ", corners)
-    # print("IDS:  ",ids)
-    if ids is not None:
-        aruco.drawDetectedMarkers(frame, corners, ids)
-        # cv2.imshow("original", frame)
-        roi_frame, playground = wrap_correction(frame, ids, corners)
-        # if playground is not None:
-        #     cv2.imshow('Playground', playground)
-    return roi_frame, playground
-
-
-if __name__ == "__main__":
+def main():
     print("[INFO] starting video stream...")
-    # vs = cv2.VideoCapture("http://192.168.1.153:4747/video")
-    vs = cv2.VideoCapture(1)
+    vs = cv2.VideoCapture("http://192.168.1.153:4747/video")
+    # vs = cv2.VideoCapture(1)
 
-    # # Get the current resolution
-    # current_width = int(vs.get(cv2.CAP_PROP_FRAME_WIDTH))
-    # current_height = int(vs.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    # Get the current resolution
+    current_width = int(vs.get(cv2.CAP_PROP_FRAME_WIDTH))
+    current_height = int(vs.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-    # # Calculate the new resolution (double the width and height)
-    # new_width = current_width * 2
-    # new_height = current_height * 2
+    # Calculate the new resolution (double the width and height)
+    new_width = current_width * 2
+    new_height = current_height * 2
 
-    # # Set the new resolution
-    # vs.set(cv2.CAP_PROP_FRAME_WIDTH, new_width)
-    # vs.set(cv2.CAP_PROP_FRAME_HEIGHT, new_height)
+    # Set the new resolution
+    vs.set(cv2.CAP_PROP_FRAME_WIDTH, new_width)
+    vs.set(cv2.CAP_PROP_FRAME_HEIGHT, new_height)
 
     while True:
         _, frame = vs.read()
-        cv2.imshow("original", frame)
-        
-        roi_frame, playground = main(frame)
-        if roi_frame is not None and playground is not None and roi_frame.any() and playground.any():
-            cv2.imshow("roi_frame ", roi_frame)
-            cv2.imshow("playground", playground)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        # time.sleep(2.0)
+        # cv2.imshow("original", frame)
+        corners, ids, _ = aruco.detectMarkers(frame, aruco_dict)
+        print("Corner = ", corners)
+        # print("IDS:  ",ids)
+        if ids is not None:
+            aruco.drawDetectedMarkers(frame, corners, ids)
+            cv2.imshow("original", frame)
+            frame, playground = wrap_correction(frame, ids, corners)
+
+            cv2.imshow('ROI', frame)
+
+            if playground is not None:
+                cv2.imshow('Playground', playground)
 
         key = cv2.waitKey(1) & 0xFF
         # if the `q` key was pressed, break from the loop
@@ -162,3 +150,7 @@ if __name__ == "__main__":
     # do a bit of cleanup
     plt.show()
     cv2.destroyAllWindows()
+
+
+if __name__ == "__main__":
+    main()
