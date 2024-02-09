@@ -47,7 +47,7 @@ def generate_matrix_from_image(frame):
         list_matrix = grid_matrix.tolist()
     return list_matrix,orientation
 
-vc = cv2.VideoCapture(0)
+vc = cv2.VideoCapture(1)
 while True:
     _,frame = vc.read()
     matrix, orientation = generate_matrix_from_image(frame)

@@ -60,13 +60,13 @@ def identify_aruco_marker_position(frame):
 
 if __name__=="__main__":
     # Open the video capture device
-    vc = cv2.VideoCapture(0)
+    vc = cv2.VideoCapture(1)
     while True:
         # Read a frame from the video capture
         _, frame = vc.read()
 
         # Identify Aruco marker positions in the frame
-        matrix,  positions = identify_aruco_marker_position(frame)
+        matrix, orientation,  positions = identify_aruco_marker_position(frame)
 
         # Print positions and draw marker IDs on the frame
         print(f'position = ', positions)

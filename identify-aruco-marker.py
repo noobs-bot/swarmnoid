@@ -47,7 +47,7 @@ def identify_aruco_marker(frame):
     return list_matrix,orientation
 
 if __name__=="__main__":
-    vc = cv2.VideoCapture(0)
+    vc = cv2.VideoCapture(1)
     while True:
         _,frame = vc.read()
         matrix, orientation = identify_aruco_marker(frame)

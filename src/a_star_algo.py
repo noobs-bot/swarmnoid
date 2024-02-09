@@ -4,10 +4,6 @@ import cv2
 import numpy as np
 from Identify_marker import identify_aruco_marker
 
-bot = '4'
-waste = '5'
-home = '1'
-
 
 def get_neighbors(node, matrix):
     """
@@ -106,45 +102,66 @@ def draw_matrix(matrix, path=[]):
     """
     matrix_size = len(matrix)  # Assuming matrix is a square matrix
 
-    dark_blue = (50, 25, 125)
-    offset_green = (122, 255, 122)
-    offset_red = (255, 122, 122)
-    red_blue = (255, 0, 255)  # bot for red
-    green_blue = (0, 255, 255)  # bot for green
+    yellow = (0, 255, 255)
     green = (0, 255, 0)
+
+    blue = (0, 0, 255)
+    # offset_green = (122, 255, 122)
+    # offset_red = (255, 122, 122)
+    # red_blue = (255, 0, 255)  # bot for red inorganic bot
+    # green_blue = (0, 255, 255)  # bot for green organic bot
     red = (255, 0, 0)
     gray = (125, 125, 125)
+    pink = (203, 192, 255)
+    orange = (0, 165, 255)
     black = (0, 0, 0)
     white = (255, 255, 255)
 
-    cell_size = 30
+    cell_size = 20
     height, width = matrix_size * cell_size, matrix_size * cell_size
     canvas = np.ones((height, width, 3), dtype=np.uint8) * 255
 
     for i in range(matrix_size):
         for j in range(matrix_size):
             color = white
-            if matrix[i][j] == 9:
-                color = offset_green
-            elif matrix[i][j] == 8:
-                color = offset_red
-            elif matrix[i][j] == 6:
-                color = red_blue
-            elif matrix[i][j] == 7:
-                color = green_blue
-            elif (
-                matrix[i][j] == 0
-                or matrix[i][j] == 1
-                or matrix[i][j] == 2
-                or matrix[i][j] == 3
-                or matrix[i][j] == 4
-                or matrix[i][j] == 5
-            ):
-                color = dark_blue
-            elif 8 < i < 14 and (j == 2 or j == 3 or j == 4):
+            if matrix[i][j] == 4:
+                color = yellow
+            elif matrix[i][j] == 5:
                 color = green
-            elif 8 < j < 14 and (i == 2 or i == 3 or i == 4):
+            elif matrix[i][j] == 6:
                 color = red
+            elif matrix[i][j] == 7:
+                color = blue
+            elif (
+                matrix[i][j] == 8
+                or matrix[i][j] == 10
+                or matrix[i][j] == 12
+                or matrix[i][j] == 14
+                or matrix[i][j] == 16
+            ):
+                color = pink
+            elif (
+                matrix[i][j] == 9
+                or matrix[i][j] == 11
+                or matrix[i][j] == 13
+                or matrix[i][j] == 15
+                or matrix[i][j] == 17
+            ):
+                color = orange
+            # elif (
+            #     matrix[i][j] == 0
+            #     or matrix[i][j] == 1
+            #     or matrix[i][j] == 2
+            #     or matrix[i][j] == 3
+            #     or matrix[i][j] == 4
+            #     or matrix[i][j] == 5
+            # ):
+            #     color = blue
+            # elif 8 < i < 14 and (j == 2 or j == 3 or j == 4):
+            #     color = green
+            # elif 8 < j < 14 and (i == 2 or i == 3 or i == 4):
+            #     color = red
+
             elif matrix[i][j] == "b":
                 color = black
 
@@ -275,7 +292,7 @@ def take_home(bot_id, waste_id, matrix):
         matrix_array, str(bot_id), str(waste_id))
     if closest_indices is not None:
         closest_start, closest_end, min_distance = find_closest_indices(
-            matrix_array, str(bot_id), (waste_id)
+            matrix_array, str(bot_id), str(waste_id)
         )
 
         closest_end = (closest_end[0] + 1, closest_end[1] + 2)
@@ -297,54 +314,52 @@ def take_home(bot_id, waste_id, matrix):
     return final_path, matrix
 
 
-def main():
+def main(frame):
+    matrix, orientation, positions = identify_aruco_marker(frame)
+    matrix_array = np.array(matrix)
+    if positions != []:
+        diff = 15
+        for item in positions:
+            # print(item)
+            cv2.putText(
+                frame,
+                f"ID: {item}, ",
+                (50, 50 + diff),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.5,
+                (0, 0, 255),
+                1,
+            )
+            diff = diff + 20
+
+    # Find marker positions for IDs 1 and 2
+    # marker_1_position = None
+    # marker_2_position = None
+    # for marker_id, position, _ in positions:
+    #     if marker_id == 1:
+    #         marker_1_position = position
+    #     elif marker_id == 2:
+    #         marker_2_position = position
+
+        pick_path = []
+        return_path = []
+        # if find_closest_indices(matrix_array, '4', '5'):
+        obj_path, matrix = position_Bot(bot, waste, matrix)
+        ret_path, matrix = take_home(bot, home, matrix)
+        pick_path.append(obj_path)
+        return_path.append(ret_path)
+
+
+if __name__ == "__main__":
     # vc = cv2.VideoCapture('http://192.168.1.153:4747/video')
-    vc = cv2.VideoCapture(0)
+    vc = cv2.VideoCapture(1)
 
     while True:
         _, frame = vc.read()
         # Identify Aruco marker positions in the frame
-        matrix, orientation, positions = identify_aruco_marker(frame)
-
-        matrix_array = np.array(matrix)
-        if positions != []:
-            diff = 15
-            for item in positions:
-                # print(item)
-                cv2.putText(
-                    frame,
-                    f"ID: {item}, ",
-                    (50, 50 + diff),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5,
-                    (0, 0, 255),
-                    1,
-                )
-                diff = diff + 20
-
-        # Find marker positions for IDs 1 and 2
-        # marker_1_position = None
-        # marker_2_position = None
-        # for marker_id, position, _ in positions:
-        #     if marker_id == 1:
-        #         marker_1_position = position
-        #     elif marker_id == 2:
-        #         marker_2_position = position
-
-            pick_path = []
-            return_path = []
-            # if find_closest_indices(matrix_array, '4', '5'):
-            obj_path, matrix = position_Bot(bot, waste, matrix)
-            ret_path, matrix = take_home(bot, home, matrix)
-
-            pick_path.append(obj_path)
-            return_path.append(ret_path)
+        main(frame)
 
         cv2.imshow("Frame", frame)
         key = cv2.waitKey(1) & 0xFF
         if key == ord("q"):
             break
-
-
-if __name__ == "__main__":
-    main()
