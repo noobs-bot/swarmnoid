@@ -1,6 +1,6 @@
 import time
 
-def calculate_commands(coordinates):
+def command_bot(coordinates):
     movement_commands = []  # Use a different variable name to avoid conflicts
     current_position = (0, 0)  # Initialize the current position of the robot
 
