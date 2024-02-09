@@ -22,9 +22,13 @@ if __name__ == "__main__":
             # for bot1 : 6 id -> organic bot
             # bot1
             # inorganic_waste
-            waste_path, matrix = position_Bot(bot2, inorganic_waste[0], matrix)
+            waste_path, matrix = position_Bot(bot1, inorganic_waste[0], matrix)
             # print(f'orientation = ', orientation)
             print(f'waste path = ', waste_path)
+
+            home_path, matrix = take_home(bot2, orgainic_waste[0], matrix)
+            # print(f'orientation = ', orientation)
+            print(f'home path = ', waste_path)
 
         key = cv2.waitKey(1) & 0xFF
         # if the `q` key was pressed, break from the loop
