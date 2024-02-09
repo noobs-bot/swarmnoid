@@ -1,8 +1,9 @@
-# This is to test how different id aurco look like 
+# This is to test how different id aurco look like
 # Also for future when printing might be necessary
 
 import cv2
 import numpy as np
+
 
 def aruco_marker_generator(marker_id, marker_size):
 
@@ -16,7 +17,8 @@ def aruco_marker_generator(marker_id, marker_size):
     marker_image = cv2.cvtColor(marker_image, cv2.COLOR_GRAY2BGR)
     return marker_image
 
-if __name__== "__main__" :
+
+if __name__ == "__main__":
     marker_size = 200
     # Aruco marker size of 200 pixel
 
@@ -42,10 +44,17 @@ if __name__== "__main__" :
         # marker_id: position includes (x,y) coordinates
     }
 
-    for marker_id, position in positions.items():
-        marker_iamge = aruco_marker_generator(marker_id, marker_size)
-        cv2.imwrite("images/Aurco/Aurco_{}.png".format(str(marker_id)), marker_iamge)
-        cv2.imshow(str(marker_id), marker_iamge)
+    # for marker_id, position in positions.items():
+    #     marker_iamge = aruco_marker_generator(marker_id, marker_size)
+    #     cv2.imwrite(
+    #         "images/Aurco/Aurco_{}.png".format(str(marker_id)), marker_iamge)
+    #     cv2.imshow(str(marker_id), marker_iamge)
+
+    for item in range(0, 18):
+        marker_iamge = aruco_marker_generator(item, marker_size)
+        cv2.imwrite(
+            "images/Aurco/Aurco_{}.png".format(str(item)), marker_iamge)
+        cv2.imshow(str(item), marker_iamge)
 
     # Display the generated ArUco markers
     cv2.waitKey(0)

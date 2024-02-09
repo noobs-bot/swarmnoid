@@ -23,15 +23,9 @@ board = aruco.GridBoard_create(
 # board.setMarkerCorners(marker_positions)
 
 # Replace the IP address with the correct address of your camera stream
-ip_address = "http://192.168.1.153:4747/video"
+# ip_address = "http://192.168.1.153:4747/video"
 
-# Initialize the VideoStream
-# vs = VideoStream(src=ip_address).start()
-
-# Allow the camera sensor to warm up
-# (Note: For USB cameras, this step is not necessary)
-
-cv2.waitKey(2000)
+# cv2.waitKey(2000)
 
 with open('camera.json', 'r') as json_file:
     camera_data = json.load(json_file)
@@ -39,91 +33,95 @@ dist = np.array(camera_data["dist"])
 mtx = np.array(camera_data["mtx"])
 
 
-def wrap_correction(frame, ids, corners):
-    bottom_right = None
-    bottom_left = None
-    top_right = None
-    top_left = None
-
-    # cv2.imshow('original frame', frame)
+def wrap_correction(frame, marker_data):
     playground = None
 
-    # Filter out markers that you want to use for perspective transformation
-    # Update with the IDs of the markers you want to use
-    valid_marker_ids = [0, 1, 2, 3]
-    valid_corners = [corner for marker_id, corner in zip(
-        ids, corners) if marker_id[0] in valid_marker_ids]
+    # Extract the marker IDs and corner points from the marker_data list
+    marker_ids = [marker_id[0] for marker_id, _ in marker_data]
+    corners = [corner_points for _, corner_points in marker_data]
 
-    if len(valid_corners) >= 4:
-        # Sort corners based on marker IDs
-        sorted_corners = [corner for _, corner in sorted(
-            zip(ids, valid_corners), key=lambda x: x[0][0])]
+    # Define the required marker IDs
+    required_marker_ids = [0, 1, 3, 2]
+
+    if not all(marker_id in marker_ids for marker_id in required_marker_ids):
+        # If any required marker ID is missing, return None for both frame and playground
+        return None, None
+
+    # Filter out markers that you want to use for perspective transformation
+    valid_marker_data = [(marker_id, corner) for marker_id, corner in zip(marker_ids, corners) if marker_id in required_marker_ids]
+
+    if len(valid_marker_data) == 4:
+        # Sort marker data based on marker IDs
+        sorted_marker_data = sorted(valid_marker_data, key=lambda x: x[0])
+
+        # Extract sorted corners
+        sorted_corners = [corner for _, corner in sorted_marker_data]
 
         # Extract corners in order
-    # Extract the first corner of each marker
+        # Extract the first corner of each marker
         top_left = tuple(map(int, sorted_corners[0][0][0]))
-        top_right = tuple(map(int, sorted_corners[1][0][0]))
-        bottom_right = tuple(map(int, sorted_corners[2][0][0]))
-        bottom_left = tuple(map(int, sorted_corners[3][0][0]))
+        bottom_left = tuple(map(int, sorted_corners[1][0][0]))
+        bottom_right = tuple(map(int, sorted_corners[3][0][0]))
+        top_right = tuple(map(int, sorted_corners[2][0][0]))
 
-        # Check if all markers are detected before proceeding
-        if None not in [bottom_right, bottom_left, top_right, top_left]:
-            # Define the source and destination quadrilateral (frame)
-            x1, y1 = top_left  # 0 marker
-            x2, y2 = top_right  # 1 marker
-            x3, y3 = bottom_left  # 2 marker
-            x4, y4 = bottom_right  # 3 marker
+        # Define the source and destination quadrilateral (frame)
+        x1, y1 = top_left  # 0 marker
+        x2, y2 = bottom_left  # 1 marker
+        x3, y3 = bottom_right  # 3 marker
+        x4, y4 = top_right  # 2 marker
 
-            # Draw lines connecting the corners on the original frame
-            frame = cv2.line(frame, top_left, top_right, (0, 255, 0), 2)
-            frame = cv2.line(frame, top_right, bottom_right, (0, 255, 0), 2)
-            frame = cv2.line(frame, bottom_right, bottom_left, (0, 255, 0), 2)
-            frame = cv2.line(frame, bottom_left, top_left, (0, 255, 0), 2)
+        # Draw lines connecting the corners on the original frame
+        frame = cv2.line(frame, top_left, top_right, (0, 255, 0), 2)
+        frame = cv2.line(frame, top_right, bottom_right, (0, 255, 0), 2)
+        frame = cv2.line(frame, bottom_right, bottom_left, (0, 255, 0), 2)
+        frame = cv2.line(frame, bottom_left, top_left, (0, 255, 0), 2)
 
-            # Define the source and destination quadrilateral (frame)
-            src_pts = np.array(
-                [[x1, y1], [x2, y2], [x3, y3], [x4, y4]], dtype=np.float32)
+        # Define the source and destination quadrilateral (frame)
+        src_pts = np.array(
+            [[x1, y1], [x2, y2], [x3, y3], [x4, y4]], dtype=np.float32)
+        # top left, bottom left, bottom right, top right
 
-            # Define the destination rectangle (output size)
-            width = int(max(np.linalg.norm(np.array([x2 - x1, y2 - y1])),
-                            np.linalg.norm(np.array([x4 - x3, y4 - y3]))))
-            height = int(max(np.linalg.norm(np.array([x3 - x1, y3 - y1])),
-                             np.linalg.norm(np.array([x4 - x2, y4 - y2]))))
+        # Define the destination rectangle (output size)
+        width = int(max(np.linalg.norm(np.array([x4 - x1, y4 - y1])),
+                        np.linalg.norm(np.array([x3 - x2, y3 - y2]))))
+        height = int(max(np.linalg.norm(np.array([x2 - x1, y2 - y1])),
+                         np.linalg.norm(np.array([x3 - x4, y3 - y4]))))
 
-            dest_pts = np.array([(0, 0), (width - 1, 0), (0, height - 1), (width - 1, height - 1)],
-                                dtype=np.float32)
+        dest_pts = np.array([(0, 0), (0, height - 1), (width - 1, height - 1), (width - 1, 0)],
+                            dtype=np.float32)
 
-            # Compute the perspective transformation matrix
-            matrix = cv2.getPerspectiveTransform(src_pts, dest_pts)
+        # Compute the perspective transformation matrix
+        matrix = cv2.getPerspectiveTransform(src_pts, dest_pts)
 
-            # Apply the perspective transformation to the frame
-            playground = cv2.warpPerspective(frame, matrix, (width, height))
+        # Apply the perspective transformation to the frame
+        playground = cv2.warpPerspective(frame, matrix, (width, height))
 
-            # Save the warped frame
-            cv2.imwrite("images/playground.png", playground)
-
-            # Display the warped frame
-            # cv2.imshow("playground", playground)
-
-            # Resize the playground image by twice
-            # playground = cv2.resize(playground, (2 * playground.shape[1], 2 * playground.shape[0]))
+        # Save the warped frame
+        cv2.imwrite("images/playground.png", playground)
 
     return frame, playground
 
 
-def main(frame):
+def detect_playground(frame):
     playground = None
     roi_frame = None
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     # time.sleep(2.0)
     # cv2.imshow("original", frame)
     corners, ids, _ = aruco.detectMarkers(frame, aruco_dict)
+    # Combine respective IDs and corners into a list of tuples
+    marker_data = [(marker_id, corner_points)
+                   for marker_id, corner_points in zip(ids, corners)]
+
+# Print the list of tuples
+    # print("marker_data = ", marker_data)
     # print("Corner = ", corners)
-    # print("IDS:  ",ids)
+    # print("IDS:  ", ids)
     if ids is not None:
-        aruco.drawDetectedMarkers(frame, corners, ids)
+
+        # aruco.drawDetectedMarkers(frame, corners, ids)
         # cv2.imshow("original", frame)
-        roi_frame, playground = wrap_correction(frame, ids, corners)
+        roi_frame, playground = wrap_correction(frame, marker_data)
         # if playground is not None:
         #     cv2.imshow('Playground', playground)
     return roi_frame, playground
@@ -148,9 +146,11 @@ if __name__ == "__main__":
 
     while True:
         _, frame = vs.read()
+        # cv2.imwrite("images/original.png", frame)
+
         cv2.imshow("original", frame)
-        
-        roi_frame, playground = main(frame)
+
+        roi_frame, playground = detect_playground(frame)
         if roi_frame is not None and playground is not None and roi_frame.any() and playground.any():
             cv2.imshow("roi_frame ", roi_frame)
             cv2.imshow("playground", playground)
