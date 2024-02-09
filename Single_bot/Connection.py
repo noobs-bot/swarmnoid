@@ -1,55 +1,68 @@
-import socket
 import time
-from Move_Direction import calculate_commands
-from A_star import assign_coordinates
+import socket
+import threading
+from Move_Direction import command_bot
 
-def establish_connection(host, port):
-    # Set the IP address and port on which the laptop server will listen
-    # Listen on all available interfaces
-    # Change port if needed.
+def handle_bot(client_socket, bot_id, pick_path, return_path):
+    bot_done = False
+    bot_home = True
+
+    while True:
+        data = client_socket.recv(1024)
+        if not data:
+            break
+
+        print(f"Received from bot {bot_id}: {data.decode()}")
+
+        if bot_home and not bot_done:
+            commands = command_bot(pick_path)
+            for command in commands:
+                if command.startswith(f"{bot_id}a") and not bot_done:
+                    print(command)
+                    response = command
+                    client_socket.sendall(response.encode())
+                    time.sleep(1)  # Introduce a delay if needed
+            bot_done = True
+            bot_home = False
+
+        if not bot_home and bot_done:
+            commands = command_bot(return_path)
+            for command in commands:
+                if command.startswith(f"{bot_id}a") and not bot_home:
+                    print(command)
+                    response = command
+                    client_socket.sendall(response.encode())
+                    time.sleep(1)  # Introduce a delay if needed
+            bot_done = True
+            bot_home = True
+
+    # Close the connection when the loop breaks
+    client_socket.close()
+
+def main():
+    host = "0.0.0.0"
+    port = 1111
+
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    # Bind the socket to a specific address and port
     server_socket.bind((host, port))
-
-    # Listen for incoming connections
     server_socket.listen(1)
     print(f"Server listening on {host}:{port}")
 
-    # Accept a connection
-    client_socket, client_address = server_socket.accept()
-    print(f"Connection from {client_address}")
+    bot1_pick_path = {1: [(3, 1), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (3, 8)]}
+    bot1_return_path = {1: [(3, 8), (3, 7), (3, 6), (3, 5), (3, 4), (3, 3), (3, 2), (3, 1)]}
 
-    return server_socket, client_socket
+    bot2_pick_path = {}  # Define pick_path for bot 2
+    bot2_return_path = {}  # Define return_path for bot 2
 
+    while True:
+        client_socket1, client_address1 = server_socket.accept()
+        print(f"Connection from {client_address1}")
+        threading.Thread(target=handle_bot, args=(client_socket1, 1, bot1_pick_path, bot1_return_path)).start()
 
-# Given coordinates
-coordinates = assign_coordinates()
+        # Uncomment the following lines to handle bot 2 concurrently
+        # client_socket2, client_address2 = server_socket.accept()
+        # print(f"Connection from {client_address2}")
+        # threading.Thread(target=handle_bot, args=(client_socket2, 2, bot2_pick_path, bot2_return_path)).start()
 
-# Set the IP address and port on which the laptop server will listen
-host = '0.0.0.0'  # Listen on all available interfaces
-port = 5000  # Change if not working.
-
-# Create and establish a connection
-server_socket, client_socket = establish_connection(host, port)
-
-while True:
-    # Receive a response from the client
-    data = client_socket.recv(1024)
-    if not data:
-        break
-
-    received_data = data.decode()
-    print(f"Received from client: {received_data}")
-
-    # Check if the trigger message is received
-    if received_data.strip() == "Hello Server!":
-        # Calculate commands and send them to the client
-        movement_commands = calculate_commands(coordinates)
-        for command in movement_commands:
-            client_socket.sendall(command.encode())  # Send the encoded command
-            time.sleep(2)  # Adjust the sleep duration if needed
-
-# Close the connection
-client_socket.close()
-server_socket.close()
+if __name__ == "__main__":
+    main()
