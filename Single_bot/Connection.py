@@ -1,7 +1,10 @@
 import socket
 import time
-from Move_Direction import calculate_commands
-from A_star import assign_coordinates
+
+# Set the IP address and port on which the laptop server will listen
+host = '0.0.0.0'  # Listen on all available interfaces
+port = 5000  # Change if not working.
+
 
 def establish_connection(host, port):
     # Set the IP address and port on which the laptop server will listen
@@ -23,33 +26,36 @@ def establish_connection(host, port):
     return server_socket, client_socket
 
 
-# Given coordinates
-coordinates = assign_coordinates()
-
-# Set the IP address and port on which the laptop server will listen
-host = '0.0.0.0'  # Listen on all available interfaces
-port = 5000  # Change if not working.
-
 # Create and establish a connection
 server_socket, client_socket = establish_connection(host, port)
 
-while True:
-    # Receive a response from the client
-    data = client_socket.recv(1024)
-    if not data:
-        break
+try:
+    while True:
+        data = client_socket.recv(1024)
+        received_data = data.decode()
+        print(f"Received from client: {received_data}")
+        while True:
+            print("loop")
 
-    received_data = data.decode()
-    print(f"Received from client: {received_data}")
+        # Get user input for commands
+            user_input = input(
+                "Enter command (F/B/L/R/S to move, Q to quit): ").upper()
 
-    # Check if the trigger message is received
-    if received_data.strip() == "Hello Server!":
-        # Calculate commands and send them to the client
-        movement_commands = calculate_commands(coordinates)
-        for command in movement_commands:
-            client_socket.sendall(command.encode())  # Send the encoded command
-            time.sleep(2)  # Adjust the sleep duration if needed
+            if user_input == 'Q':
+                break
 
-# Close the connection
-client_socket.close()
-server_socket.close()
+            # Send the user input to the NodeMCU
+            client_socket.sendall(user_input.encode())
+            time.sleep(1)  # Adjust the sleep duration if needed
+            user_input = 'S'
+            client_socket.sendall(user_input.encode())
+            time.sleep(1)
+
+except KeyboardInterrupt:
+    print("\nExiting...")
+
+finally:
+    # Close the connection
+    client_socket.close()
+    server_socket.close()
+    print("Socket connection closed.")
