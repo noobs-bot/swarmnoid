@@ -48,7 +48,8 @@ def wrap_correction(frame, marker_data):
         return None, None
 
     # Filter out markers that you want to use for perspective transformation
-    valid_marker_data = [(marker_id, corner) for marker_id, corner in zip(marker_ids, corners) if marker_id in required_marker_ids]
+    valid_marker_data = [(marker_id, corner) for marker_id, corner in zip(
+        marker_ids, corners) if marker_id in required_marker_ids]
 
     if len(valid_marker_data) == 4:
         # Sort marker data based on marker IDs
@@ -59,7 +60,7 @@ def wrap_correction(frame, marker_data):
 
         # Extract corners in order
         # Extract the first corner of each marker
-        top_left = tuple(map(int, sorted_corners[0][0][0]))
+        top_left = tuple(map(int, sorted_corners[0][0][1]))
         bottom_left = tuple(map(int, sorted_corners[1][0][0]))
         bottom_right = tuple(map(int, sorted_corners[3][0][0]))
         top_right = tuple(map(int, sorted_corners[2][0][0]))

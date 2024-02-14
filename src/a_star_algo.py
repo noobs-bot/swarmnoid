@@ -266,6 +266,7 @@ def position_Bot(
 
     else:
         print("No closest indices found for bot {}.".format(bot_id))
+        return None, None
     final_path = final_path[0] if final_path else {}
     return final_path, matrix
 
@@ -309,6 +310,7 @@ def take_home(bot_id, waste_id, matrix):
         cv2.imshow('Home Path - {}'.format(bot_id), draw_matrix(matrix, path))
     else:
         print("No closest indices found for bot {}.".format(bot_id))
+        return None, None
 
     final_path = final_path[0] if final_path else {}
     return final_path, matrix

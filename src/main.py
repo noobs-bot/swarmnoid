@@ -10,7 +10,7 @@ from a_star_algo import *
 
 if __name__ == "__main__":
     print("[INFO] starting video stream...")
-    vc = cv2.VideoCapture(1)
+    vc = cv2.VideoCapture("http://192.168.1.166:8080/video")
     while True:
         _, frame = vc.read()
         roi_frame, playground = detect_playground(frame)

@@ -13,7 +13,9 @@ organic_waste_home = "5"  # organic
 
 
 # inorganic waste
-inorganic_waste = ["8", "10", "12", "14", "16"]
+inorganic_waste = ["8", "10", "12"]
 
 # organic waste
-orgainic_waste = ["9", "11", "13", "15", "17"]
+orgainic_waste = ["9", "11", "13"]
+
+ip = "http://192.168.1.166:8080/video"

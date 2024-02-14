@@ -60,7 +60,7 @@ def identify_aruco_marker(frame):
 
 if __name__ == "__main__":
 
-    vc = cv2.VideoCapture(1)
+    vc = cv2.VideoCapture("http://192.168.1.166:8080/video")
     while True:
         _, frame = vc.read()
         matrix, orientation, positions = identify_aruco_marker(frame)

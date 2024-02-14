@@ -1,56 +1,38 @@
 import time
 
 
-def calculate_commands(coordinates):
-    movement_commands = []  # Use a different variable name to avoid conflicts
-    current_position = (0, 0)  # Initialize the current position of the robot
+def calculate_commands(coordinates, bot):
+    movement_commands = []  # Initialize the list of movement commands
+    # Initialize the current position of the robot
+    current_position = coordinates[0]
 
-    for coord in coordinates:  # Loop through each set of coordinates
+    # Loop through each set of coordinates starting from the second one
+    for coord in coordinates[1:]:
         x, y = coord
 
-        # Calculate the distance to move along the x-axis
-        x_distance = x - current_position[0]
+        # Calculate the differences in x and y coordinates
+        dx = x - current_position[0]
+        dy = y - current_position[1]
 
-        # Calculate the distance to move along the y-axis
-        y_distance = y - current_position[1]
+        # Generate movement commands based on the differences
+        if dx > 0:
+            movement_commands.append(bot + "F")  # Move forward
+        elif dx < 0:
+            movement_commands.append(bot + "B")  # Move backward
 
-        # Move forward
-        if x_distance > 0:
-            user_input = input(f"Move {x_distance} units forward? (Y/N): ")
-            if user_input.upper() == "Y":
-                # Add forward commands
-                movement_commands.extend(["F"] * (x_distance // 200))
-                # Sleep to simulate movement time
-                time.sleep(2 * (x_distance // 200))
-
-        # Turn right or left6y7v
-        if y_distance > 0:
-            user_input = input(f"Turn {y_distance} units right? (Y/N): ")
-            if user_input.upper() == "Y":
-                # Add right turn commands
-                movement_commands.extend(["R"] * (y_distance // 200))
-                # Sleep to simulate turn time
-                time.sleep(4 * (y_distance // 200))
-        elif y_distance < 0:
-            user_input = input(f"Turn {-y_distance} units left? (Y/N): ")
-            if user_input.upper() == "Y":
-                # Add left turn commands
-                movement_commands.extend(["L"] * (-y_distance // 200))
-                # Sleep to simulate turn time
-                time.sleep(4 * (-y_distance // 200))
+        if dy > 0:
+            movement_commands.append(bot + "R")  # Turn right
+        elif dy < 0:
+            movement_commands.append(bot + "L")  # Turn left
 
         # Update the current position
-        current_position = (x, y)
+        current_position = coord
 
-    # Stop the robotic car
-    movement_commands.append("S")  # Add stop command
-
+    movement_commands.append(bot + "S")  # Stop the robotic car
     return movement_commands
 
 
 if __name__ == "__main__":
-    coordinates = [(3, 1), (3, 2), (3, 3), (3, 4),
-                   (3, 5), (3, 6), (3, 7), (3, 8)]
-    print(calculate_commands(coordinates))
-    # Call the function with the given coordinates
-    movement_commands = calculate_commands(coordinates)
+    coordinates = [(2, 20), (2, 19), (2, 18), (2, 17), (2, 16), (2, 15), (2, 14), (2, 13), (2, 12), (3, 12), (4, 12), (5, 12), (6, 12), (7, 12), (8, 12), (9, 12), (10, 12), (11, 12),
+                   (12, 12), (13, 12), (14, 12), (15, 12), (16, 12), (17, 12), (18, 12), (19, 12), (20, 12), (21, 12), (22, 12), (23, 12), (24, 12), (25, 12), (26, 12), (27, 12), (28, 12), (28, 11)]
+    print(calculate_commands(coordinates, "6"))

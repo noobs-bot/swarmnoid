@@ -1,9 +1,10 @@
 import socket
 import time
 
+
 # Set the IP address and port on which the laptop server will listen
 host = '0.0.0.0'  # Listen on all available interfaces
-port = 5000  # Change if not working.
+port = 1000  # Change if not working.
 
 def establish_connection(host, port):
     # Set the IP address and port on which the laptop server will listen
@@ -36,11 +37,13 @@ try:
             break
 
         # Send the user input to the NodeMCU
+        print(user_input)
         client_socket.sendall(user_input.encode())
-        time.sleep(1)  # Adjust the sleep duration if needed
-        user_input = 'S'
-        client_socket.sendall(user_input.encode())
-        time.sleep(1)
+        print(user_input.encode())
+        time.sleep(0.1)  # Adjust the sleep duration if needed
+        # user_input = 'S'
+        # client_socket.sendall(user_input.encode())
+        # time.sleep(1)
 
 except KeyboardInterrupt:
     print("\nExiting...")
