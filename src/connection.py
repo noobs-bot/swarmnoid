@@ -51,7 +51,7 @@ def establish_connection(host, port):
 def capture_video_pick(bot_id, waste_id):
     print(waste_id, bot_id)
     print("capture_video_pick")
-    vc = cv2.VideoCapture(ip)
+    vc = cv2.VideoCapture(1)
     _, frame = vc.read()
     roi_frame, playground = detect_playground(frame)
     if roi_frame is not None and playground is not None and roi_frame.any() and playground.any():
@@ -73,7 +73,7 @@ def capture_video_pick(bot_id, waste_id):
 def capture_video_home(bot_id, waste_id):
     print(waste_id, bot_id)
 
-    vc = cv2.VideoCapture(ip)
+    vc = cv2.VideoCapture(1)
     _, frame = vc.read()
     roi_frame, playground = detect_playground(frame)
     if roi_frame is not None and playground is not None and roi_frame.any() and playground.any():

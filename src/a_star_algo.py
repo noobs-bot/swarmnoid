@@ -346,8 +346,8 @@ def main(frame):
         pick_path = []
         return_path = []
         # if find_closest_indices(matrix_array, '4', '5'):
-        obj_path, matrix = position_Bot(bot, waste, matrix)
-        ret_path, matrix = take_home(bot, home, matrix)
+        obj_path, matrix = position_Bot(6, 9, matrix)
+        ret_path, matrix = take_home(7, 10, matrix)
         pick_path.append(obj_path)
         return_path.append(ret_path)
 
